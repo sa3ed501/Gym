@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>متتبع السعرات والماكروز</title>
+<style>
+:root{--bg:#f6f7f4;--card:#fff;--tx:#1d2a1f;--mut:#6b776d;--ac:#2f9e5b;--bd:#e3e7e1;--p:#e0564b;--c:#e8a31c;--f:#3f7fd6;--bad:#d6453b;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121712;--card:#1b231c;--tx:#e8efe9;--mut:#93a095;--bd:#2a342b;--ac:#4cc17d;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#121712;--card:#1b231c;--tx:#e8efe9;--mut:#93a095;--bd:#2a342b;--ac:#4cc17d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;padding-bottom:90px}
+main{max-width:560px;margin:auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:8px}.sp{justify-content:space-between}
+.mut{color:var(--mut);font-size:13px}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 12px;cursor:pointer}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+button:disabled{opacity:.5}
+input,textarea{font:inherit;width:100%;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:10px;padding:8px}
+textarea{min-height:80px}
+.ring{position:relative;width:130px;height:130px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font-size:26px}
+.m{flex:1;text-align:center}.m b{display:block;font-size:18px}
+.bar{height:6px;border-radius:4px;background:var(--bd);margin-top:4px;overflow:hidden}.bar i{display:block;height:100%}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);display:flex;justify-content:center;gap:8px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.tabs button{flex:1;max-width:180px}.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.fab{position:fixed;bottom:calc(70px + env(safe-area-inset-bottom,0px));left:16px;border-radius:50%;width:56px;height:56px;font-size:28px;padding:0;box-shadow:0 4px 14px #0004}
+.meal{padding:10px 0;border-bottom:1px solid var(--bd);cursor:pointer}.meal:last-child{border:0}
+.sheet{position:fixed;inset:0;background:#0007;display:none;z-index:20}.sheet.open{display:block}
+.sheet>div{position:absolute;bottom:0;left:0;right:0;max-height:92%;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:14px;max-width:560px;margin:auto}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg button{flex:1}.seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.it{border:1px solid var(--bd);border-radius:12px;padding:8px;margin:8px 0;background:var(--card)}
+.it .row>*{min-width:0}
+.hist{display:flex;align-items:flex-end;gap:6px;height:130px;margin:10px 0}
+.hist div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;cursor:pointer}
+.hist i{width:100%;border-radius:6px 6px 0 0;display:block}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:4px}
+.err{color:var(--bad);font-size:14px;margin:6px 0}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+ <div id="v-day">
+  <div class="row sp" style="margin-bottom:10px">
+   <button id="nx">‹</button><b id="dl"></b><button id="pv">›</button>
+  </div>
+  <div class="card">
+   <div class="row" style="gap:16px">
+    <div class="ring"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="56" fill="none" stroke="var(--bd)" stroke-width="12"/><circle id="rc" cx="65" cy="65" r="56" fill="none" stroke="var(--ac)" stroke-width="12" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="352"/></svg>
+     <div class="t"><b id="rem">0</b><span class="mut" id="rl">متبقي</span></div></div>
+    <div style="flex:1"><div class="mut">المتناول</div><b style="font-size:22px" id="eat">0</b> <span class="mut">سعرة</span>
+     <div class="mut" id="gl" style="margin-top:6px"></div>
+     <button id="gb" style="margin-top:6px;padding:4px 10px;font-size:13px">تعديل الهدف</button></div>
+   </div>
+   <div class="row" style="margin-top:14px">
+    <div class="m"><span class="mut"><i class="dot" style="background:var(--p)"></i>بروتين</span><b id="mp">0</b><div class="bar"><i id="bp" style="background:var(--p)"></i></div></div>
+    <div class="m"><span class="mut"><i class="dot" style="background:var(--c)"></i>كارب</span><b id="mc">0</b><div class="bar"><i id="bc" style="background:var(--c)"></i></div></div>
+    <div class="m"><span class="mut"><i class="dot" style="background:var(--f)"></i>دهون</span><b id="mf">0</b><div class="bar"><i id="bf" style="background:var(--f)"></i></div></div>
+   </div>
+  </div>
+  <div class="card"><b>وجبات اليوم</b><div id="meals"></div></div>
+ </div>
+ <div id="v-hist" class="hide">
+  <div class="card"><b>آخر 7 أيام</b><div class="mut" id="avg"></div><div class="hist" id="hb"></div></div>
+  <div class="card"><div id="hl"></div></div>
+ </div>
+</main>
+<button class="pri fab" id="add" aria-label="إضافة وجبة">+</button>
+<div class="tabs"><button id="t1" class="on">اليوم</button><button id="t2">السجل</button></div>
+
+<div class="sheet" id="sh"><div>
+ <div class="row sp"><b id="st">إضافة وجبة</b><button id="cl">إغلاق</button></div>
+ <div id="inp">
+  <div class="seg" style="margin-top:10px"><button id="m1" class="on">📷 صورة</button><button id="m2">✍️ وصف نصي</button></div>
+  <div id="pi"><input type="file" accept="image/*" id="fi"><img id="pv2" class="hide" style="width:100%;border-radius:12px;margin-top:8px;max-height:220px;object-fit:cover"></div>
+  <div id="pt" class="hide"><textarea id="tx" placeholder="مثال: صحن دجاج مسلوق 200 غرام مع رز أبيض كوب"></textarea></div>
+  <input id="nt" placeholder="ملاحظة اختيارية (مثل: الكمية تقريباً 300غ)" style="margin-top:8px">
+  <button class="pri" id="an" style="width:100%;margin-top:10px">حلّل بالذكاء الاصطناعي</button>
+  <div class="err" id="er"></div>
+ </div>
+ <div id="ed" class="hide">
+  <input id="ti" placeholder="اسم الوجبة">
+  <div id="its"></div>
+  <div class="card" style="margin-top:8px"><b id="tot"></b></div>
+  <div class="row"><button class="pri" id="sv" style="flex:1">حفظ الوجبة</button><button id="dm" class="hide" style="color:var(--bad)">حذف</button></div>
+ </div>
+</div></div>
+
+<div class="sheet" id="gs"><div>
+ <b>الهدف اليومي (سعرة)</b>
+ <div class="row" style="margin:10px 0"><div style="flex:1"><span class="mut">الحد الأدنى</span><input id="g1" type="number" inputmode="numeric"></div><div style="flex:1"><span class="mut">الحد الأقصى</span><input id="g2" type="number" inputmode="numeric"></div></div>
+ <button class="pri" id="gsv" style="width:100%">حفظ</button>
+</div></div>
+
+<script>
+const K="cal-tracker-v1",$=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const TODAY=dk(new Date());
+let S={goal:{min:1600,max:1750},days:{}};
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+let cur=TODAY,draft=null,mode="img",img=null;
+const shift=(k,n)=>{const d=new Date(k+"T12:00:00");d.setDate(d.getDate()+n);return dk(d)};
+const r0=x=>Math.round(x);
+const calc=i=>({k:i.k*i.g/100,p:i.p*i.g/100,c:i.c*i.g/100,f:i.f*i.g/100});
+const sumItems=its=>its.reduce((a,i)=>{const v=calc(i);a.k+=v.k;a.p+=v.p;a.c+=v.c;a.f+=v.f;return a},{k:0,p:0,c:0,f:0});
+const sumDay=k=>(S.days[k]||[]).reduce((a,m)=>{const v=sumItems(m.items);a.k+=v.k;a.p+=v.p;a.c+=v.c;a.f+=v.f;return a},{k:0,p:0,c:0,f:0});
+const dlabel=k=>new Intl.DateTimeFormat("ar",{weekday:"long",day:"numeric",month:"long"}).format(new Date(k+"T12:00:00"));
+
+function render(){
+ const t=sumDay(cur),{min,max}=S.goal;
+ $("#dl").textContent=(cur===TODAY?"اليوم · ":"")+dlabel(cur);
+ $("#eat").textContent=r0(t.k);
+ const rc=$("#rc");rc.style.strokeDashoffset=352*(1-Math.min(t.k/max,1));
+ const over=t.k>max;rc.style.stroke=over?"var(--bad)":"var(--ac)";
+ $("#rem").textContent=r0(Math.abs(max-t.k));
+ $("#rl").textContent=over?"فوق السقف":"متبقي";
+ $("#gl").textContent=t.k<min?`الهدف ${min}–${max} · ${r0(min-t.k)} للحد الأدنى`:over?`تجاوزت الحد بـ ${r0(t.k-max)}`:`ضمن الهدف ${min}–${max} ✓`;
+ const mx=Math.max(t.p+t.c+t.f,1);
+ [["p",t.p],["c",t.c],["f",t.f]].forEach(([k,v])=>{$("#m"+k).textContent=r0(v)+" غ";$("#b"+k).style.width=(v/mx*100)+"%"});
+ const ms=S.days[cur]||[];
+ $("#meals").innerHTML=ms.length?ms.map(m=>{const v=sumItems(m.items);return `<div class="meal" data-id="${m.id}"><div class="row sp"><b>${esc(m.title||"وجبة")}</b><b>${r0(v.k)} سعرة</b></div><div class="mut">${m.t} · ب ${r0(v.p)} · ك ${r0(v.c)} · د ${r0(v.f)}</div></div>`}).join(""):'<div class="mut" style="padding:10px 0">لا توجد وجبات بعد. اضغط + للإضافة.</div>';
+ renderHist();
+}
+function renderHist(){
+ const days=[...Array(7)].map((_,i)=>shift(TODAY,i-6)),vals=days.map(d=>sumDay(d));
+ const top=Math.max(S.goal.max*1.15,...vals.map(v=>v.k));
+ const logged=vals.filter(v=>v.k>0);
+ $("#avg").textContent=logged.length?`المتوسط: ${r0(logged.reduce((a,v)=>a+v.k,0)/logged.length)} سعرة · ب ${r0(logged.reduce((a,v)=>a+v.p,0)/logged.length)} · ك ${r0(logged.reduce((a,v)=>a+v.c,0)/logged.length)} · د ${r0(logged.reduce((a,v)=>a+v.f,0)/logged.length)} (${logged.length} أيام مسجّلة)`:"لا بيانات بعد";
+ $("#hb").innerHTML=days.map((d,i)=>{const k=vals[i].k,col=k===0?"var(--bd)":k>S.goal.max?"var(--bad)":k>=S.goal.min?"var(--ac)":"var(--c)";return `<div data-d="${d}"><span>${r0(k)||""}</span><i style="height:${Math.max(k/top*100,3)}%;background:${col}"></i><span>${new Intl.DateTimeFormat("ar",{weekday:"short"}).format(new Date(d+"T12:00:00"))}</span></div>`}).join("");
+ $("#hl").innerHTML=days.slice().reverse().map(d=>{const v=sumDay(d);return `<div class="meal" data-d="${d}"><div class="row sp"><b>${dlabel(d)}</b><b>${r0(v.k)} سعرة</b></div><div class="mut">ب ${r0(v.p)} · ك ${r0(v.c)} · د ${r0(v.f)}</div></div>`}).join("");
+}
+function go(k){cur=k;tab(1);render()}
+function tab(n){$("#v-day").classList.toggle("hide",n!==1);$("#v-hist").classList.toggle("hide",n!==2);$("#t1").classList.toggle("on",n===1);$("#t2").classList.toggle("on",n===2);$("#add").classList.toggle("hide",n!==1)}
+$("#t1").onclick=()=>tab(1);$("#t2").onclick=()=>{tab(2);renderHist()};
+$("#pv").onclick=()=>{if(cur<TODAY){cur=shift(cur,1);render()}};
+$("#nx").onclick=()=>{cur=shift(cur,-1);render()};
+$("#hb").onclick=e=>{const d=e.target.closest("[data-d]");if(d)go(d.dataset.d)};
+$("#hl").onclick=e=>{const d=e.target.closest("[data-d]");if(d)go(d.dataset.d)};
+
+/* goal */
+$("#gb").onclick=()=>{$("#g1").value=S.goal.min;$("#g2").value=S.goal.max;$("#gs").classList.add("open")};
+$("#gsv").onclick=()=>{let a=+$("#g1").value,b=+$("#g2").value;if(a>0&&b>0){if(a>b)[a,b]=[b,a];S.goal={min:a,max:b};save();$("#gs").classList.remove("open");render()}};
+$("#gs").onclick=e=>{if(e.target.id==="gs")e.target.classList.remove("open")};
+
+/* sheet */
+function openSheet(m){
+ $("#sh").classList.add("open");$("#er").textContent="";
+ if(m){draft=JSON.parse(JSON.stringify(m));$("#st").textContent="تعديل الوجبة";$("#inp").classList.add("hide");$("#dm").classList.remove("hide");showEd()}
+ else{draft=null;img=null;$("#st").textContent="إضافة وجبة";$("#inp").classList.remove("hide");$("#ed").classList.add("hide");$("#tx").value="";$("#nt").value="";$("#fi").value="";$("#pv2").classList.add("hide");$("#dm").classList.add("hide");$("#an").disabled=false;$("#an").textContent="حلّل بالذكاء الاصطناعي"}
+}
+$("#add").onclick=()=>openSheet();
+$("#cl").onclick=()=>$("#sh").classList.remove("open");
+$("#meals").onclick=e=>{const m=e.target.closest("[data-id]");if(m)openSheet((S.days[cur]||[]).find(x=>x.id===m.dataset.id))};
+function setMode(m){mode=m;$("#m1").classList.toggle("on",m==="img");$("#m2").classList.toggle("on",m==="txt");$("#pi").classList.toggle("hide",m!=="img");$("#pt").classList.toggle("hide",m!=="txt")}
+$("#m1").onclick=()=>setMode("img");$("#m2").onclick=()=>setMode("txt");
+$("#fi").onchange=async e=>{const f=e.target.files[0];if(!f)return;
+ try{const bm=await createImageBitmap(f),s=Math.min(1,1024/Math.max(bm.width,bm.height)),c=document.createElement("canvas");c.width=bm.width*s;c.height=bm.height*s;c.getContext("2d").drawImage(bm,0,0,c.width,c.height);
+  img=await new Promise(r=>c.toBlob(r,"image/jpeg",.82));const p=$("#pv2");p.src=URL.createObjectURL(img);p.classList.remove("hide")}catch(x){$("#er").textContent="تعذّر قراءة الصورة"}};
+
+const PROMPT=`أنت خبير تغذية. حلّل الوجبة وأعد JSON فقط، بلا شرح ولا علامات markdown، بهذا الشكل:
+{"title":"اسم مختصر للوجبة بالعربية","items":[{"name":"اسم المكوّن بالعربية","grams":number,"kcal":number,"protein":number,"carbs":number,"fat":number}]}
+قيم kcal وprotein وcarbs وfat هي لإجمالي الكمية المقدّرة لذلك المكوّن (وليست لكل 100 غرام) والبروتين والكارب والدهون بالغرام. قدّر الأوزان بواقعية وافصل المكونات الرئيسية (بروتين، نشويات، خضار، صلصات وزيوت).`;
+$("#an").onclick=async()=>{
+ const er=$("#er");er.textContent="";
+ const txt=$("#tx").value.trim(),note=$("#nt").value.trim();
+ if(mode==="img"&&!img){er.textContent="اختر صورة أولاً";return}
+ if(mode==="txt"&&!txt){er.textContent="اكتب وصف الوجبة أولاً";return}
+ const b=$("#an");b.disabled=true;b.textContent="جارٍ التحليل…";
+ try{
+  const sample=await claude.use("sample");
+  if(!sample)throw {code:"none"};
+  const o={modelTier:"default"};
+  let input=PROMPT+"\n\n"+(mode==="txt"?"وصف الوجبة: "+txt:"حلّل الوجبة في الصورة المرفقة.")+(note?"\nملاحظة من المستخدم: "+note:"");
+  if(mode==="img"){const l=await sample.limits();if(!l||!l.images)throw {code:"noimg"};o.images=[img]}
+  const r=await sample.json(input,o);
+  const its=(r.items||[]).filter(i=>+i.grams>0).map(i=>{const g=+i.grams;return{n:String(i.name||"عنصر"),g:g,k:+i.kcal/g*100||0,p:+i.protein/g*100||0,c:+i.carbs/g*100||0,f:+i.fat/g*100||0}});
+  if(!its.length)throw {code:"empty"};
+  draft={id:"m"+Date.now(),t:new Date().toLocaleTimeString("ar",{hour:"2-digit",minute:"2-digit"}),title:r.title||"وجبة",items:its};
+  $("#inp").classList.add("hide");$("#st").textContent="راجع وعدّل الكميات";showEd();
+ }catch(x){
+  const c=x&&x.code;
+  er.textContent=c==="not_granted"?"لم يتم منح إذن الذكاء الاصطناعي لهذه الصفحة.":c==="rate_limited"?"طلبات كثيرة، حاول بعد قليل.":c==="noimg"?"تحليل الصور غير متاح لحسابك حالياً، جرّب الوصف النصي.":c==="none"?"ميزة الذكاء الاصطناعي غير متاحة هنا.":"تعذّر التحليل، أعد المحاولة أو غيّر الوصف.";
+  b.disabled=false;b.textContent="حلّل بالذكاء الاصطناعي";
+ }
+};
+function showEd(){$("#ed").classList.remove("hide");$("#ti").value=draft.title;drawIts()}
+function totTxt(){const t=sumItems(draft.items);$("#tot").textContent=`المجموع: ${r0(t.k)} سعرة · ب ${r0(t.p)} · ك ${r0(t.c)} · د ${r0(t.f)}`}
+function drawIts(){
+ $("#its").innerHTML=draft.items.map((i,x)=>`<div class="it" data-x="${x}"><div class="row"><input class="nm" value="${esc(i.n)}" style="flex:2"><input class="gr" type="number" inputmode="decimal" value="${r0(i.g)}" style="flex:1"><span class="mut">غ</span></div><div class="row sp" style="margin-top:6px"><span class="mut ln"></span><span class="row"><button class="h">½</button><button class="d">×2</button><button class="x" style="color:var(--bad)">✕</button></span></div></div>`).join("");
+ draft.items.forEach((_,x)=>lineUp(x));totTxt();
+}
+function lineUp(x){const el=$(`#its [data-x="${x}"] .ln`);if(!el)return;const v=calc(draft.items[x]);el.textContent=`${r0(v.k)} سعرة · ب ${r0(v.p)} · ك ${r0(v.c)} · د ${r0(v.f)}`}
+$("#its").addEventListener("input",e=>{const it=e.target.closest(".it");if(!it)return;const x=+it.dataset.x;
+ if(e.target.classList.contains("gr"))draft.items[x].g=Math.max(+e.target.value||0,0);else draft.items[x].n=e.target.value;lineUp(x);totTxt()});
+$("#its").addEventListener("click",e=>{const it=e.target.closest(".it");if(!it)return;const x=+it.dataset.x,b=e.target;
+ if(b.classList.contains("h"))draft.items[x].g/=2;else if(b.classList.contains("d"))draft.items[x].g*=2;else if(b.classList.contains("x"))draft.items.splice(x,1);else return;drawIts()});
+$("#sv").onclick=()=>{
+ draft.items=draft.items.filter(i=>i.g>0);if(!draft.items.length)return;
+ draft.title=$("#ti").value.trim()||"وجبة";
+ const a=S.days[cur]||(S.days[cur]=[]),k=a.findIndex(m=>m.id===draft.id);
+ if(k>=0)a[k]=draft;else a.push(draft);
+ save();$("#sh").classList.remove("open");render();
+};
+$("#dm").onclick=()=>{S.days[cur]=(S.days[cur]||[]).filter(m=>m.id!==draft.id);save();$("#sh").classList.remove("open");render()};
+render();
+</script>
+</body>
+</html>
